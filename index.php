@@ -83,7 +83,7 @@ header .sub { text-align: center; color: var(--org2); font-size: 12px; letter-sp
 .units { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 @media (max-width: 860px) { .units { grid-template-columns: 1fr; } }
 .unit { border: 1px solid var(--org); background: var(--panel); padding: 12px; position: relative; }
-.unit.down { border-color: var(--red); }
+.unit.down { border-color: var(--red); filter: saturate(.45); }
 .hex { width: 54px; height: 60px; margin: 0 auto 6px; background: var(--org); color: #000;
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
   display: flex; align-items: center; justify-content: center; font-size: 22px; }
@@ -93,7 +93,6 @@ header .sub { text-align: center; color: var(--org2); font-size: 12px; letter-sp
 .unit .role { text-align: center; color: var(--org2); font-size: 12px; margin-bottom: 10px; line-height: 1.6; }
 .lamp { text-align: center; font-size: 13px; margin-bottom: 8px; color: #7dff6a; line-height: 1.6; }
 .unit.down .lamp { color: var(--red); }
-.unit.stale { filter: saturate(.35); }
 #age.stale, #collected.stale { color: var(--red); }
 .nodata { border: 1px dashed var(--org); padding: 18px; text-align: center; color: var(--org2); grid-column: 1 / -1; }
 .row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0;
@@ -305,7 +304,6 @@ function render(data) {
   $('age').textContent = Math.max(0, Math.round((Date.now() - collectedMs) / 1000));
   $('age').classList.toggle('stale', stale);
   $('collected').classList.toggle('stale', stale);
-  if (stale) document.querySelectorAll('.unit').forEach(el => el.classList.add('stale'));
 }
 
 async function fetchStatus() {
