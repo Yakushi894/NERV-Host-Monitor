@@ -128,6 +128,8 @@ def push_to_oci01(local_path):
     if r.stdout.strip() != "200":
         print("push http failed: code=%s err=%s" % (r.stdout.strip(), r.stderr.strip()[:150]), flush=True)
 
+LAST_OK_PATH = "/srv/magi/last_ok.json"
+
 while True:
     try:
         units = [
@@ -145,9 +147,26 @@ while True:
                 _u["name"] = _names[_u["id"]]
             if _u["id"] in _roles:
                 _u["role"] = _roles[_u["id"]]
+        # ユニット別の最終収集（成功）時刻を保持し、到達不能ユニットには最終収集として付ける
+        _now_iso = datetime.datetime.now(
+            datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec="seconds")
+        try:
+            with open(LAST_OK_PATH) as f:
+                _last_ok = json.load(f)
+        except Exception:
+            _last_ok = {}
+        for _u in units:
+            if _u["status"] == "ok":
+                _last_ok[_u["id"]] = _now_iso
+            elif _u["id"] in _last_ok:
+                _u["last_ok"] = _last_ok[_u["id"]]
+        try:
+            with open(LAST_OK_PATH, "w") as f:
+                json.dump(_last_ok, f)
+        except Exception:
+            pass
         payload = {
-            "collected_at": datetime.datetime.now(
-                datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec="seconds"),
+            "collected_at": _now_iso,
             "units": units,
         }
         final = os.path.join(WWW, "status-%s.json" % TOKEN)

@@ -94,7 +94,6 @@ header .sub { text-align: center; color: var(--org2); font-size: 12px; letter-sp
 .lamp { text-align: center; font-size: 13px; margin-bottom: 8px; color: #7dff6a; line-height: 1.6; }
 .unit.down .lamp { color: var(--red); }
 .lamp.unknown { color: var(--org2); }
-#age.stale, #collected.stale { color: var(--red); }
 .nodata { border: 1px dashed var(--org); padding: 18px; text-align: center; color: var(--org2); grid-column: 1 / -1; }
 .row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0;
   border-top: 1px dashed var(--line); line-height: 1.55; }
@@ -193,6 +192,11 @@ function fmtUp(sec) {
   const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60);
   return d + '日 ' + h + '時間 ' + m + '分';
 }
+function fmtLastOk(iso) {
+  const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  const age = s >= 3600 ? Math.floor(s / 3600) + '時間前' : s >= 60 ? Math.floor(s / 60) + '分前' : s + '秒前';
+  return iso.replace('T', ' ').replace('+09:00', '') + '（' + age + '）';
+}
 function pct(used, total) { return total > 0 ? Math.round(used / total * 100) : 0; }
 
 // ---------- ゲージ表示切替（バー / 円形メーター） ----------
@@ -281,7 +285,9 @@ function render(data) {
         '<h2><span class="tx txc">' + u.name + '</span></h2>' +
         '<div class="role"><span class="tx txc">' + u.role + '</span></div>' +
         '<div class="lamp"><span class="tx txc">● 停止（脱落）</span></div>' +
-        '<div class="err"><span class="tx txc">応答がありません。対象ホストの状態を確認してください。</span></div></div>';
+        '<div class="err"><span class="tx txc">応答がありません。対象ホストの状態を確認してください。</span></div>' +
+        (u.last_ok ? '<div class="row"><span class="tx txl">最終収集</span><span class="tx txr">' + fmtLastOk(u.last_ok) + '</span></div>' : '') +
+        '</div>';
     }
     const mp = pct(u.mem_used_mb, u.mem_total_mb);
     const lp = Math.min(100, Math.round(u.load[0] / Math.max(u.cpu, 1) * 100));
@@ -304,8 +310,6 @@ function render(data) {
   if (!$('units').innerHTML) $('units').innerHTML = '<div class="nodata"><span class="tx txc">異常ユニットはありません</span></div>';
   const collectedMs = new Date(data.collected_at).getTime();
   $('age').textContent = Math.max(0, Math.round((Date.now() - collectedMs) / 1000));
-  $('age').classList.toggle('stale', stale);
-  $('collected').classList.toggle('stale', stale);
 }
 
 async function fetchStatus() {
