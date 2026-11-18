@@ -46,7 +46,7 @@ if (isset($_GET['api'])) {
 /* 本家フォント: magi-font.woff2（使用文字のみのサブセット）を同じフォルダに置くと有効になります */
 @font-face {
   font-family: 'MagiFont';
-  src: url('magi-font.woff2?v=4') format('woff2');
+  src: url('magi-font.woff2?v=5') format('woff2');
   font-display: swap;
 }
 :root {
