@@ -95,6 +95,7 @@ header .sub { text-align: center; color: var(--org2); font-size: 12px; letter-sp
 .unit.down .lamp { color: var(--red); }
 .unit.stale { filter: saturate(.35); }
 #age.stale, #collected.stale { color: var(--red); }
+.nodata { border: 1px dashed var(--org); padding: 18px; text-align: center; color: var(--org2); grid-column: 1 / -1; }
 .row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0;
   border-top: 1px dashed var(--line); line-height: 1.55; }
 .row span:first-child { color: var(--org2); }
@@ -127,7 +128,7 @@ footer { margin-top: 14px; font-size: 12px; color: #9c7433; text-align: center; 
   <div><span class="tx txr">次回更新まで <b id="count">5</b> 秒</span></div>
 </div>
 <div class="verdict" id="verdict"><span class="tx txc">合議中…</span></div>
-<div class="ctl"><button id="modeBtn" type="button">表示切替</button></div>
+<div class="ctl"><button id="filterBtn" type="button">異常のみ表示</button> <button id="modeBtn" type="button">表示切替</button></div>
 <div class="units" id="units"></div>
 <div class="stripe"></div>
 <footer>
@@ -198,6 +199,8 @@ function pct(used, total) { return total > 0 ? Math.round(used / total * 100) : 
 let mode = 'bar';
 try { mode = localStorage.getItem('hostmon-mode') || 'bar'; } catch (e) {}
 let lastData = null;
+let filterMode = 'all';
+try { filterMode = localStorage.getItem('hostmon-filter') || 'all'; } catch (e) {}
 
 function polar(cx, cy, r, deg) {
   const a = deg * Math.PI / 180;
@@ -252,6 +255,9 @@ function gauges(u, mp, lp) {
 function applyModeBtn() {
   $('modeBtn').textContent = mode === 'bar' ? 'メーター表示に切替' : 'バー表示に切替';
 }
+function applyFilterBtn() {
+  $('filterBtn').textContent = filterMode === 'bad' ? '全て表示' : '異常のみ表示';
+}
 
 function render(data) {
   lastData = data;
@@ -268,6 +274,7 @@ function render(data) {
   }
   $('collected').textContent = data.collected_at.replace('T', ' ').replace('+09:00', '');
   $('units').innerHTML = data.units.map((u, i) => {
+    if (filterMode === 'bad' && !stale && u.status === 'ok') return '';
     if (u.status !== 'ok') {
       return '<div class="unit down"><div class="hex">' + (i + 1) + '</div>' +
         '<h2><span class="tx txc">' + u.name + '</span></h2>' +
@@ -293,6 +300,7 @@ function render(data) {
       (u.extra ? '<div class="row"><span class="tx txl">コンテナ</span><span class="tx txr">' + u.extra + '</span></div>' : '') +
       '</div>';
   }).join('');
+  if (!$('units').innerHTML) $('units').innerHTML = '<div class="nodata"><span class="tx txc">異常ユニットはありません</span></div>';
   const collectedMs = new Date(data.collected_at).getTime();
   $('age').textContent = Math.max(0, Math.round((Date.now() - collectedMs) / 1000));
   $('age').classList.toggle('stale', stale);
@@ -324,7 +332,14 @@ $('modeBtn').addEventListener('click', () => {
   applyModeBtn();
   if (lastData) render(lastData);
 });
+$('filterBtn').addEventListener('click', () => {
+  filterMode = filterMode === 'bad' ? 'all' : 'bad';
+  try { localStorage.setItem('hostmon-filter', filterMode); } catch (e) {}
+  applyFilterBtn();
+  if (lastData) render(lastData);
+});
 applyModeBtn();
+applyFilterBtn();
 fetchStatus();
 </script>
 </body>
