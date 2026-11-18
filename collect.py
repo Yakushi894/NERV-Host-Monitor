@@ -32,6 +32,26 @@ def local_dump():
     with open("/proc/loadavg") as f:
         out.append("L=" + " ".join(f.read().split()[:3]))
     out.append("C=" + str(os.cpu_count()))
+    cm = ""
+    try:
+        with open("/proc/cpuinfo") as f:
+            for line in f:
+                if line.lower().startswith("model name") and ":" in line:
+                    cm = line.split(":", 1)[1].strip()
+                    break
+    except Exception:
+        pass
+    if not cm:
+        try:
+            r = subprocess.run(["lscpu"], capture_output=True, text=True, timeout=5,
+                               env=dict(os.environ, LC_ALL="C"))
+            for line in r.stdout.splitlines():
+                if line.startswith("Model name:"):
+                    cm = line.split(":", 1)[1].strip()
+                    break
+        except Exception:
+            pass
+    out.append("CM=" + cm)
     mem = {}
     with open("/proc/meminfo") as f:
         for line in f:
@@ -67,6 +87,7 @@ REMOTE_CMD = (
     'echo "U=$(cut -d. -f1 /proc/uptime)"; '
     'echo "L=$(cut -d\' \' -f1-3 /proc/loadavg)"; '
     'echo "C=$(nproc)"; '
+    'echo "CM=$( (grep -m1 \'model name\' /proc/cpuinfo || LC_ALL=C lscpu | grep -m1 \'Model name\') | cut -d: -f2 | sed \'s/^ *//\')"; '
     'free -m | awk \'/^Mem:/{print "MT="$2"\\nMU="$3}\'; '
     'free -m | awk \'/^Swap:/{print "ST="$2"\\nSU="$3}\'; '
     'df -m / | awk \'NR==2{gsub(/%/,"",$5); print "DT="$2"\\nDU="$3"\\nDP="$5}\'; '
@@ -89,7 +110,7 @@ def unit(uid, name, addr, role, d):
     return {
         "id": uid, "name": name, "addr": addr, "role": role, "status": "ok",
         "host": uid, "os": d.get("OS", ""), "kernel": d.get("K", ""),
-        "cpu": int(d.get("C", "0")),
+        "cpu": int(d.get("C", "0")), "cpu_name": d.get("CM", ""),
         "load": [float(x) for x in d.get("L", "0 0 0").split()],
         "mem_total_mb": int(d.get("MT", "0")), "mem_used_mb": int(d.get("MU", "0")),
         "swap_total_mb": int(d.get("ST", "0")), "swap_used_mb": int(d.get("SU", "0")),

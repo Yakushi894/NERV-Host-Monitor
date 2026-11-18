@@ -277,7 +277,7 @@ function render(data) {
       '<div class="lamp"><span class="tx txc">● 正常稼働</span></div>' +
       gauges(u, mp, lp) +
       '<div class="row"><span class="tx txl">負荷平均</span><span class="tx txr">' + u.load.join(' / ') + '</span></div>' +
-      '<div class="row"><span class="tx txl">論理CPU</span><span class="tx txr">' + u.cpu + '</span></div>' +
+      '<div class="row"><span class="tx txl">CPU</span><span class="tx txr">' + (u.cpu_name ? u.cpu_name + ' ' : '') + '（' + u.cpu + 'コア）</span></div>' +
       '<div class="row"><span class="tx txl">メモリ</span><span class="tx txr">' + u.mem_used_mb + ' / ' + u.mem_total_mb + ' MB</span></div>' +
       '<div class="row"><span class="tx txl">スワップ</span><span class="tx txr">' + u.swap_used_mb + ' / ' + u.swap_total_mb + ' MB</span></div>' +
       '<div class="row"><span class="tx txl">ディスク</span><span class="tx txr">' + Math.round(u.disk_used_mb / 1024) + ' / ' + Math.round(u.disk_total_mb / 1024) + ' GB（' + u.disk_pct + '%）</span></div>' +
