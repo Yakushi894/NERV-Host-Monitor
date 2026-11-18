@@ -109,7 +109,7 @@ def unit(uid, name, addr, role, d):
         return {"id": uid, "name": name, "addr": addr, "role": role, "status": "unreachable"}
     return {
         "id": uid, "name": name, "addr": addr, "role": role, "status": "ok",
-        "host": uid, "os": d.get("OS", ""), "kernel": d.get("K", ""),
+        "host": d.get("H", ""), "os": d.get("OS", ""), "kernel": d.get("K", ""),
         "cpu": int(d.get("C", "0")), "cpu_name": d.get("CM", ""),
         "load": [float(x) for x in d.get("L", "0 0 0").split()],
         "mem_total_mb": int(d.get("MT", "0")), "mem_used_mb": int(d.get("MU", "0")),
@@ -137,6 +137,11 @@ while True:
             unit("ARTABAN-4", "ARTABAN-4", "", "Nextcloud ／ 本ページ配信",
                  remote_dump(A1_HOST, A1_USER, A1_PORT)),
         ]
+        # 表示名（実ホスト名）は設定ファイル側で割り当てる（コードにはコードネームのみ）
+        _names = CFG.get("names", {})
+        for _u in units:
+            if _u["id"] in _names:
+                _u["name"] = _names[_u["id"]]
         payload = {
             "collected_at": datetime.datetime.now(
                 datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec="seconds"),

@@ -46,7 +46,7 @@ if (isset($_GET['api'])) {
 /* 本家フォント: magi-font.woff2（使用文字のみのサブセット）を同じフォルダに置くと有効になります */
 @font-face {
   font-family: 'MagiFont';
-  src: url('magi-font.woff2?v=3') format('woff2');
+  src: url('magi-font.woff2?v=4') format('woff2');
   font-display: swap;
 }
 :root {
@@ -264,7 +264,7 @@ function render(data) {
   $('units').innerHTML = data.units.map((u, i) => {
     if (u.status !== 'ok') {
       return '<div class="unit down"><div class="hex">' + (i + 1) + '</div>' +
-        '<h2><span class="tx txc">' + u.id + '</span></h2>' +
+        '<h2><span class="tx txc">' + u.name + '</span></h2>' +
         '<div class="role"><span class="tx txc">' + u.role + '</span></div>' +
         '<div class="lamp"><span class="tx txc">● 到達不能</span></div>' +
         '<div class="err"><span class="tx txc">応答がありません。対象ホストの状態を確認してください。</span></div></div>';
@@ -272,7 +272,7 @@ function render(data) {
     const mp = pct(u.mem_used_mb, u.mem_total_mb);
     const lp = Math.min(100, Math.round(u.load[0] / Math.max(u.cpu, 1) * 100));
     return '<div class="unit"><div class="hex">' + (i + 1) + '</div>' +
-      '<h2><span class="tx txc">' + u.id + '</span></h2>' +
+      '<h2><span class="tx txc">' + u.name + '</span></h2>' +
       '<div class="role"><span class="tx txc">' + u.role + '</span></div>' +
       '<div class="lamp"><span class="tx txc">● 正常稼働</span></div>' +
       gauges(u, mp, lp) +

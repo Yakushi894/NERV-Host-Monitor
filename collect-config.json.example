@@ -1,1 +1,1 @@
-{"a1_host":"a1.example.invalid","a1_port":25000,"a1_user":"ubuntu","oci01":"192.0.2.11","oci02":"192.0.2.12","ssh_key":"collector_key"}
+{"a1_host":"a1.example.invalid","a1_port":25000,"a1_user":"ubuntu","names":{"ARTABAN-4":"your-host-4","BALTHASAR-2":"your-host-2","CASPER-3":"your-host-3","MELCHIOR-1":"your-host-1"},"oci01":"192.0.2.11","oci02":"192.0.2.12","ssh_key":"collector_key"}
