@@ -137,11 +137,14 @@ while True:
             unit("ARTABAN-4", "ARTABAN-4", "", "Nextcloud ／ 本ページ配信",
                  remote_dump(A1_HOST, A1_USER, A1_PORT)),
         ]
-        # 表示名（実ホスト名）は設定ファイル側で割り当てる（コードにはコードネームのみ）
+        # 表示名（実ホスト名）と表示用ロールは設定ファイル側で割り当てる（コードにはコードネームと汎用表記のみ）
         _names = CFG.get("names", {})
+        _roles = CFG.get("roles", {})
         for _u in units:
             if _u["id"] in _names:
                 _u["name"] = _names[_u["id"]]
+            if _u["id"] in _roles:
+                _u["role"] = _roles[_u["id"]]
         payload = {
             "collected_at": datetime.datetime.now(
                 datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec="seconds"),
