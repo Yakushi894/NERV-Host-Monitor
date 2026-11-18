@@ -93,6 +93,8 @@ header .sub { text-align: center; color: var(--org2); font-size: 12px; letter-sp
 .unit .role { text-align: center; color: var(--org2); font-size: 12px; margin-bottom: 10px; line-height: 1.6; }
 .lamp { text-align: center; font-size: 13px; margin-bottom: 8px; color: #7dff6a; line-height: 1.6; }
 .unit.down .lamp { color: var(--red); }
+.unit.stale { filter: saturate(.35); }
+#age.stale, #collected.stale { color: var(--red); }
 .row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0;
   border-top: 1px dashed var(--line); line-height: 1.55; }
 .row span:first-child { color: var(--org2); }
@@ -254,8 +256,12 @@ function applyModeBtn() {
 function render(data) {
   lastData = data;
   const okCount = data.units.filter(u => u.status === 'ok').length;
+  const ageSec = (Date.now() - new Date(data.collected_at).getTime()) / 1000;
+  const stale = ageSec > 90;
   const v = $('verdict');
-  if (okCount === data.units.length) {
+  if (stale) {
+    v.innerHTML = '<span class="tx txc">警告： データ停止（' + Math.max(1, Math.round(ageSec / 60)) + '分前から更新なし）</span>'; v.className = 'verdict alert';
+  } else if (okCount === data.units.length) {
     v.innerHTML = '<span class="tx txc">全ユニット正常稼働</span>'; v.className = 'verdict';
   } else {
     v.innerHTML = '<span class="tx txc">警告： ' + (data.units.length - okCount) + ' ユニット異常</span>'; v.className = 'verdict alert';
@@ -289,6 +295,9 @@ function render(data) {
   }).join('');
   const collectedMs = new Date(data.collected_at).getTime();
   $('age').textContent = Math.max(0, Math.round((Date.now() - collectedMs) / 1000));
+  $('age').classList.toggle('stale', stale);
+  $('collected').classList.toggle('stale', stale);
+  if (stale) document.querySelectorAll('.unit').forEach(el => el.classList.add('stale'));
 }
 
 async function fetchStatus() {
