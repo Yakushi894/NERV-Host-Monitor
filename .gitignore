@@ -1,0 +1,17 @@
+# 実環境の設定（秘密情報を含むため管理外）
+magi-config.php
+collect-config.json
+token.txt
+
+# 収集用SSH鍵
+oci_magi
+oci_magi.pub
+collector_key
+collector_key.pub
+
+# フォント（原フォントのライセンスのため配布物に含めない）
+magi-font.woff2
+
+# バックアップ・作業ファイル
+*.bak*
+__pycache__/

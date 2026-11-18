@@ -1,0 +1,1 @@
+{"a1_host":"a1.example.invalid","a1_port":25000,"a1_user":"ubuntu","oci01":"192.0.2.11","oci02":"192.0.2.12","ssh_key":"collector_key"}
