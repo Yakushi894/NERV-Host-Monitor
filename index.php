@@ -46,7 +46,7 @@ if (isset($_GET['api'])) {
 /* 本家フォント: magi-font.woff2（使用文字のみのサブセット）を同じフォルダに置くと有効になります */
 @font-face {
   font-family: 'MagiFont';
-  src: url('magi-font.woff2?v=5') format('woff2');
+  src: url('magi-font.woff2?v=6') format('woff2');
   font-display: swap;
 }
 :root {
@@ -93,6 +93,7 @@ header .sub { text-align: center; color: var(--org2); font-size: 12px; letter-sp
 .unit .role { text-align: center; color: var(--org2); font-size: 12px; margin-bottom: 10px; line-height: 1.6; }
 .lamp { text-align: center; font-size: 13px; margin-bottom: 8px; color: #7dff6a; line-height: 1.6; }
 .unit.down .lamp { color: var(--red); }
+.lamp.unknown { color: var(--org2); }
 #age.stale, #collected.stale { color: var(--red); }
 .nodata { border: 1px dashed var(--org); padding: 18px; text-align: center; color: var(--org2); grid-column: 1 / -1; }
 .row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0;
@@ -263,13 +264,14 @@ function render(data) {
   const okCount = data.units.filter(u => u.status === 'ok').length;
   const ageSec = (Date.now() - new Date(data.collected_at).getTime()) / 1000;
   const stale = ageSec > 90;
+  const downNames = data.units.filter(u => u.status !== 'ok').map(u => u.name);
   const v = $('verdict');
   if (stale) {
-    v.innerHTML = '<span class="tx txc">警告： データ停止（' + Math.max(1, Math.round(ageSec / 60)) + '分前から更新なし）</span>'; v.className = 'verdict alert';
+    v.innerHTML = '<span class="tx txc">警告： データ停止（' + Math.max(1, Math.round(ageSec / 60)) + '分前から更新なし）' + (downNames.length ? ' ― 一部サーバー（' + downNames.join('、') + '）異常' : '') + '</span>'; v.className = 'verdict alert';
   } else if (okCount === data.units.length) {
     v.innerHTML = '<span class="tx txc">全ユニット正常稼働</span>'; v.className = 'verdict';
   } else {
-    v.innerHTML = '<span class="tx txc">警告： ' + (data.units.length - okCount) + ' ユニット異常</span>'; v.className = 'verdict alert';
+    v.innerHTML = '<span class="tx txc">警告： 一部サーバー（' + downNames.join('、') + '）異常</span>'; v.className = 'verdict alert';
   }
   $('collected').textContent = data.collected_at.replace('T', ' ').replace('+09:00', '');
   $('units').innerHTML = data.units.map((u, i) => {
@@ -278,7 +280,7 @@ function render(data) {
       return '<div class="unit down"><div class="hex">' + (i + 1) + '</div>' +
         '<h2><span class="tx txc">' + u.name + '</span></h2>' +
         '<div class="role"><span class="tx txc">' + u.role + '</span></div>' +
-        '<div class="lamp"><span class="tx txc">● 到達不能</span></div>' +
+        '<div class="lamp"><span class="tx txc">● 停止（脱落）</span></div>' +
         '<div class="err"><span class="tx txc">応答がありません。対象ホストの状態を確認してください。</span></div></div>';
     }
     const mp = pct(u.mem_used_mb, u.mem_total_mb);
@@ -286,7 +288,7 @@ function render(data) {
     return '<div class="unit"><div class="hex">' + (i + 1) + '</div>' +
       '<h2><span class="tx txc">' + u.name + '</span></h2>' +
       '<div class="role"><span class="tx txc">' + u.role + '</span></div>' +
-      '<div class="lamp"><span class="tx txc">● 正常稼働</span></div>' +
+      '<div class="lamp' + (stale ? ' unknown' : '') + '"><span class="tx txc">' + (stale ? '● 状態不明' : '● 正常稼働') + '</span></div>' +
       gauges(u, mp, lp) +
       '<div class="row"><span class="tx txl">負荷平均</span><span class="tx txr">' + u.load.join(' / ') + '</span></div>' +
       '<div class="row"><span class="tx txl">CPU</span><span class="tx txr">' + (u.cpu_name ? u.cpu_name + ' ' : '') + '（' + u.cpu + 'コア）</span></div>' +
